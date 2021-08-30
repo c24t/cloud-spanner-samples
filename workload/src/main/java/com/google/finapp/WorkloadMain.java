@@ -14,6 +14,7 @@
 
 package com.google.finapp;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -25,6 +26,16 @@ import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
+=======
+import com.google.protobuf.ByteString;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+>>>>>>> main
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
@@ -36,24 +47,38 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
+<<<<<<< HEAD
  * An executable method for a workload generator for the finance sample app that creates traffic by
  * sending gRPC requests to the server.
  */
 public final class WorkloadMain {
+=======
+ * A workload generator for the finance sample app that creates traffic by sending gRPC requests to
+ * the server.
+ */
+public final class WorkloadMain {
+  private static final String DEFAULT_ACCOUNT_BALANCE = "10000";
+  private static final String DEFAULT_TRANSFER_AMOUNT = "20";
+>>>>>>> main
   private static final Logger logger = Logger.getLogger(WorkloadMain.class.getName());
 
   private static class WorkloadGenerator {
     private final ManagedChannel channel;
+<<<<<<< HEAD
     private static final int DEFAULT_MAX_QUEUE_SIZE = 100;
     private final Random random = new Random();
     private final List<Task> taskValues =
         Collections.unmodifiableList(Arrays.asList(Task.values()));
     private final int numTasks = taskValues.size();
+=======
+    private final List<ByteString> ids = new ArrayList<>();
+>>>>>>> main
 
     WorkloadGenerator(ManagedChannel channel) {
       this.channel = channel;
     }
 
+<<<<<<< HEAD
     void startSteadyLoad(int threadCount, int taskCount) {
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(threadCount);
       BlockingQueue<Runnable> queue = executor.getQueue();
@@ -62,10 +87,28 @@ public final class WorkloadMain {
           ImmutableList<Task> tasks = generateRandomTasks(taskCount);
           logger.log(Level.INFO, String.format("Tasks submitted %s", tasks.toString()));
           executor.submit(WorkloadClient.getWorkloadClient(channel, tasks));
+=======
+    void seedData(int numAccounts) {
+      int numFailedCreateAccounts = 0;
+      for (int i = 0; i < numAccounts; i++) {
+        try {
+          ids.add(
+              WorkloadClient.getWorkloadClient(channel)
+                  .createAccount(
+                      DEFAULT_ACCOUNT_BALANCE,
+                      CreateAccountRequest.Type.CHECKING,
+                      CreateAccountRequest.Status.ACTIVE));
+        } catch (StatusRuntimeException e) {
+          numFailedCreateAccounts++;
+          logger.log(
+              Level.WARNING,
+              String.format("CreateAccount failed. Total count: %d", numFailedCreateAccounts));
+>>>>>>> main
         }
       }
     }
 
+<<<<<<< HEAD
     ImmutableList<Task> generateRandomTasks(int taskCount) {
       ImmutableList.Builder<Task> taskListBuilder = ImmutableList.builder();
       for (int i = 0; i < taskCount; i++) {
@@ -79,23 +122,55 @@ public final class WorkloadMain {
    * Continuously generates gRPC clients with given number of threads and tasks per thread, as
    * defined by commandline arguments.
    */
+=======
+    void startSteadyLoad() {
+      Random random = new Random();
+      int numIds = ids.size();
+      if (numIds == 0) {
+        throw new IllegalStateException("No accounts were created successfully.");
+      }
+      while (true) {
+        ByteString fromId = ids.get(random.nextInt(numIds));
+        ByteString toId = ids.get(random.nextInt(numIds));
+        if (fromId.equals(toId)) {
+          continue;
+        }
+        WorkloadClient.getWorkloadClient(channel)
+            .moveAccountBalance(fromId, toId, DEFAULT_TRANSFER_AMOUNT);
+      }
+    }
+  }
+
+>>>>>>> main
   public static void main(String[] args) {
     CommandLine cmd = parseArgs(args);
     String addressName = cmd.getOptionValue("a");
     int port;
+<<<<<<< HEAD
     int threadCount;
     int taskCount;
     try {
       port = ((Number) cmd.getParsedOptionValue("p")).intValue();
       threadCount = ((Number) cmd.getParsedOptionValue("t")).intValue();
       taskCount = ((Number) cmd.getParsedOptionValue("c")).intValue();
+=======
+    int numAccounts;
+    try {
+      port = ((Number) cmd.getParsedOptionValue("p")).intValue();
+      numAccounts = ((Number) cmd.getParsedOptionValue("n")).intValue();
+>>>>>>> main
     } catch (ParseException e) {
       throw new IllegalArgumentException("Input value cannot be parsed.", e);
     }
     ManagedChannel channel =
         ManagedChannelBuilder.forAddress(addressName, port).usePlaintext().build();
     WorkloadGenerator workloadGenerator = new WorkloadGenerator(channel);
+<<<<<<< HEAD
     workloadGenerator.startSteadyLoad(threadCount, taskCount);
+=======
+    workloadGenerator.seedData(numAccounts);
+    workloadGenerator.startSteadyLoad();
+>>>>>>> main
   }
 
   private static CommandLine parseArgs(String[] args) {
@@ -120,6 +195,7 @@ public final class WorkloadMain {
             .build());
 
     options.addOption(
+<<<<<<< HEAD
         Option.builder("t")
             .longOpt("thread-count")
             .desc("number of threads to use in thread pool")
@@ -132,6 +208,11 @@ public final class WorkloadMain {
         Option.builder("c")
             .longOpt("task-count")
             .desc("number of tasks (RPC methods) each thread performs")
+=======
+        Option.builder("n")
+            .longOpt("num-accounts")
+            .desc("number of accounts to create")
+>>>>>>> main
             .required(true)
             .type(Number.class)
             .hasArg()

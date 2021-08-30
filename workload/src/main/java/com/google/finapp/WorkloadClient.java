@@ -14,12 +14,16 @@
 
 package com.google.finapp;
 
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableList;
 import com.google.finapp.CreateAccountRequest.Status;
+=======
+>>>>>>> main
 import com.google.finapp.FinAppGrpc.FinAppBlockingStub;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.StatusRuntimeException;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -99,6 +103,26 @@ public class WorkloadClient implements Runnable {
   }
 
   private ByteString createAccount(
+=======
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+/** A gRPC client for the finance sample app. */
+public class WorkloadClient {
+
+  private final FinAppBlockingStub blockingStub;
+  private static final Logger logger = Logger.getLogger(WorkloadClient.class.getName());
+
+  private WorkloadClient(ManagedChannel channel) {
+    this.blockingStub = FinAppGrpc.newBlockingStub(channel);
+  }
+
+  public static WorkloadClient getWorkloadClient(ManagedChannel channel) {
+    return new WorkloadClient(channel);
+  }
+
+  public ByteString createAccount(
+>>>>>>> main
       String balance, CreateAccountRequest.Type type, CreateAccountRequest.Status status)
       throws StatusRuntimeException {
     CreateAccountRequest request =
@@ -117,7 +141,11 @@ public class WorkloadClient implements Runnable {
     }
   }
 
+<<<<<<< HEAD
   private void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
+=======
+  public void moveAccountBalance(ByteString fromAccountId, ByteString toAccountId, String amount)
+>>>>>>> main
       throws StatusRuntimeException {
     MoveAccountBalanceRequest request =
         MoveAccountBalanceRequest.newBuilder()
