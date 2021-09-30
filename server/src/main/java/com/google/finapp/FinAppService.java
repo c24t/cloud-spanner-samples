@@ -189,7 +189,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
     try {
       transactionEntries =
           spannerDao.getRecentTransactionsForAccount(accountId, beginTimestamp, endTimestamp);
-    } catch (SpannerDaoException e) {
+    } catch (SpannerDaoException|IllegalArgumentException e) {
       responseObserver.onError(Status.fromThrowable(e).asException());
       return;
     }
@@ -198,6 +198,7 @@ final class FinAppService extends FinAppGrpc.FinAppImplBase {
             .addAllTransactionEntry(transactionEntries)
             .build();
     responseObserver.onNext(response);
+    responseObserver.onCompleted();
   }
 
   private static AccountType toStorageAccountType(CreateAccountRequest.Type apiAccountType) {
